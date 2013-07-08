@@ -1,0 +1,5 @@
+13:22:20.075 [main] TRACE com.mercury.util.LoggerMercury - Test: TRACE level message.
+13:22:20.088 [main] DEBUG com.mercury.util.LoggerMercury - Test: DEBUG level message.
+13:22:20.089 [main] INFO  com.mercury.util.LoggerMercury - Test: INFO level message.
+13:22:20.093 [main] WARN  com.mercury.util.LoggerMercury - Test: WARN level message.
+13:22:20.093 [main] ERROR com.mercury.util.LoggerMercury - Test: ERROR level message.

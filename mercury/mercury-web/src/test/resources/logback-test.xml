@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <timestamp key="logByDay" datePattern="yyyy-MM-dd"/>
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <layout class="ch.qos.logback.classic.PatternLayout">
+      <Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Pattern>
+    </layout>
+  </appender>
+  
+  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+      <file>d:/Mercury-test-${logByDay}.log</file><!-- Or set an Absolute path file (d:/Mercury-test.log) for the logs errors-->
+      <layout class="ch.qos.logback.classic.PatternLayout">
+          <Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Pattern>
+      </layout>
+      <!--filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+          <level>ERROR</level>
+      </filter-->
+      <filter class="com.mercury.util.LogFilTer">
+          <level>INFO</level>
+      </filter>
+  </appender>
+  
+  <!--appender name="EMAIL" class="ch.qos.logback.classic.net.SMTPAppender">
+    <smtpHost>smtp.gmail.com</smtpHost>
+    <smtpPort>465</smtpPort>
+    <SSL>true</SSL>
+    <username>psdnoreply@gmail.com</username>
+    <password>papesdiop</password>
+    <to>papesdiop@gmail.com</to>    
+    <from>psdnoreply@gmail.com</from>
+    <subject>TESTING: %logger{20} - %m</subject>
+    <layout class="ch.qos.logback.classic.PatternLayout">
+      <pattern>%date %-5level %logger{35} - %message%n</pattern>
+    </layout>     
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+        <level>ERROR</level>
+    </filter>  
+  </appender-->
+  
+  <appender name="DB" class="ch.qos.logback.classic.db.DBAppender">
+      <connectionSource class="ch.qos.logback.core.db.DriverManagerConnectionSource">
+          <driverClass>com.mysql.jdbc.Driver</driverClass>
+          <url>jdbc:mysql://localhost:3306/mercury</url>
+          <user>root</user>
+          <password></password>
+      </connectionSource>
+      <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+          <level>ERROR</level>
+      </filter>
+  </appender>
+  
+  <logger name="com.mercury" level="TRACE"/>
+  
+
+  <root level="debug">
+    <appender-ref ref="STDOUT" />
+    <appender-ref ref="FILE" />
+    <appender-ref ref="DB" />
+    <appender-ref ref="EMAIL" />
+  </root>
+</configuration>

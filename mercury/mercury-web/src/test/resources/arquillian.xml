@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<arquillian>
+    <engine>
+        <property name="deploymentExportPath">target/arquillian</property>
+    </engine>
+    <container default="true" qualifier="glassfish">
+        <configuration>
+            <property name="sunResourcesXml">src/test/resources/glassfish-resources-test.xml</property> 
+        </configuration>
+    </container>
+</arquillian>
