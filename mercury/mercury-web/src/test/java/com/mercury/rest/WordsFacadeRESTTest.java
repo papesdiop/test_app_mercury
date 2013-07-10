@@ -1,11 +1,11 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mercury.rest;
 
-import com.mercury.bean.WordFacade;
+import com.mercury.bean.EmailSenderBean;
+import com.mercury.bean.LogBean;
+import com.mercury.bean.WordBean;
 import com.mercury.entity.Word;
+import com.mercury.interceptor.WordInterceptor;
+import com.mercury.util.LogFilter;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.ClientResponse;
@@ -38,8 +38,10 @@ public class WordsFacadeRESTTest {
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
         //File[] libs = Maven.resolver().loadPomFromFile("pom.xml").importRuntimeAndTestDependencies().asFile();
-        return ShrinkWrap.create(WebArchive.class, "test.war").addPackage(Word.class.getPackage())
-                .addClasses(WordFacade.class, WordsFacadeREST.class)
+        return ShrinkWrap.create(WebArchive.class, "test.war")
+                .addPackage(Word.class.getPackage())
+                //.addPackage(LogFilter.class.getPackage())
+                .addClasses(WordBean.class,LogBean.class, WordInterceptor.class, WordsFacadeREST.class)//, EmailSenderBean.class)
                 .addAsResource("persistence-test.xml", "META-INF/persistence.xml")
                 .addAsResource("logback-test.xml", "logback.xml")
                 //.addAsResource("import.sql")
@@ -61,22 +63,23 @@ public class WordsFacadeRESTTest {
     public void testSendWordRequestWithPostHttpMethod_WithJerseyClient() throws Exception{
         Client client = Client.create();
         String uri = deploymentUrl.toString() + RESOURCE_PREFIX + "/words";
+        
         WebResource webResource = client.resource(uri);
-        String input = "{\"libelle\":\"Hello Mercury\"}";
-        LOGGER.debug(input);
+        String input = "{\"message\":\"Hello Mercury\"}";
+        LOGGER.debug("URI :" + uri + "  "+input);
         ClientResponse response = webResource.type("application/json")
                 .post(ClientResponse.class, input);       
         Assert.assertEquals("Test Failed, must return 201. HTTP error code expected is: " + response.getStatus(), response.getStatus(), 201);
     }
     
     /**
-     * Teste l'URI /rest/words/{id} où id est l'identifiant de l'objet Word,
-     * et devrait retourner un objet de type JSON de la forme {"id":1,"libelle":"Hello Mercury"}
+     * Teste l'URI /rest/words 
+     * et devrait retourner une liste d'objet de type JSON de la forme {"id":1,"libelle":"Hello Mercury"}
      * @throws Exception 
      */
     @Test
     public void testGetWordRequestWithGetHttpMethod_WithJersey() throws Exception {
-        String uri = deploymentUrl.toString() +  RESOURCE_PREFIX + "/words/1";
+        String uri = deploymentUrl.toString() +  RESOURCE_PREFIX + "/words";
         Client client = Client.create();
 
         WebResource webResource = client.resource(uri);
@@ -84,7 +87,7 @@ public class WordsFacadeRESTTest {
         ClientResponse response = webResource.accept("application/json")
                 .get(ClientResponse.class);        
         Object output = response.getEntity(String.class);
-        LOGGER.debug("mercury log: Output from Server .... \n");
+        LOGGER.info("mercury log: Output from Server .... {}", output);
         LOGGER.debug("mercury log: " + output.toString());  
         Assert.assertEquals("Failed : HTTP error code : " + response.getStatus(), response.getStatus(), 200);       
     }

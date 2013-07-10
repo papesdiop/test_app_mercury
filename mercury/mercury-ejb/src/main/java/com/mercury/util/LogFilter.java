@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.mercury.util;
 
 /**
@@ -17,13 +12,13 @@ public class LogFilter extends Filter<ILoggingEvent> {
 
     @Override
     public FilterReply decide(ILoggingEvent event) {
-        if(event.getLevel() == Level.ERROR)
-            return FilterReply.NEUTRAL;
+       /* if(event.getLevel() == Level.ERROR)
+            return FilterReply.NEUTRAL;*/
         
         if(event.getLevel() != Level.INFO)
             return FilterReply.DENY;
  
-        if (event.getMessage().contains("mercury"))
+        if (event.getMessage().contains("Tracking mercury"))
             return FilterReply.NEUTRAL;
         return FilterReply.DENY;
     }

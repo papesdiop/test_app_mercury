@@ -1,14 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mercury.rest;
 
-import com.mercury.bean.WordFacade;
+import com.mercury.bean.WordBean;
 import com.mercury.entity.Word;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.servlet.http.HttpServletRequest;
@@ -33,15 +27,15 @@ import org.slf4j.LoggerFactory;
 public class WordsFacadeREST {
     static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(WordsFacadeREST.class);
     @EJB
-    WordFacade dao;
+    WordBean wordBean;
 
     @POST
     @Consumes({"application/xml", "application/json"})
     public Response create(Word entity, @Context HttpServletRequest req) {
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("------------REMOTE IP ADDRESS------------" + req.getRemoteAddr());
+            LOGGER.info(entity.getMessage() +": ------------REMOTE IP ADDRESS------------" + req.getRemoteAddr());
         }
-        dao.create(entity);
+        wordBean.create(entity, req.getRemoteAddr());
         return Response.status(201).entity(entity).build();
     }
 
@@ -52,38 +46,38 @@ public class WordsFacadeREST {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("------------REMOTE IP ADDRESS------------" + req.getRemoteAddr());
         }       
-        return dao.find(id);
+        return wordBean.find(id);
     }
 
     @PUT
     @Consumes({"application/xml", "application/json"})
     public void edit(Word entity) {
-        dao.edit(entity);
+        wordBean.edit(entity);
     }
 
     @DELETE
     @Path("{id}")
     public void remove(@PathParam("id") Integer id) {
-        dao.remove(dao.find(id));
+        wordBean.remove(wordBean.find(id));
     }
 
     @GET
     @Produces({"application/xml", "application/json"})
     public List<Word> findAll() {
-        return dao.findAll();
+        return wordBean.findAll();
     }
 
     @GET
     @Path("{from}/{to}")
     @Produces({"application/xml", "application/json"})
     public List<Word> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
-        return dao.findRange(new int[]{from, to});
+        return wordBean.findRange(new int[]{from, to});
     }
 
     @GET
     @Path("count")
     @Produces("text/plain")
     public String countREST() {
-        return String.valueOf(dao.count());
+        return String.valueOf(wordBean.count());
     }
 }

@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Log implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Basic(optional = false)
     @Column(name = "id")
     private Integer id;
@@ -41,7 +41,7 @@ public class Log implements Serializable {
     private String ipAddress;
     @Basic(optional = false)
     @NotNull
-    @Size(min = 1, max = 300)
+    @Size(min = 0, max = 4046)
     @Column(name = "detail")
     private String detail;
 

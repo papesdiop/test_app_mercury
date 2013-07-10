@@ -1,25 +1,36 @@
-
-
 package com.mercury.entity;
 
+import com.mercury.bean.WordBean;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.Resource;
+import javax.mail.Message;
+import javax.mail.Message.RecipientType;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
+import javax.persistence.PostPersist;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -29,33 +40,65 @@ import javax.xml.bind.annotation.XmlRootElement;
  Cette entite permet l'enregistrement des mots envoyes qui devront etre enregistres dans la base de donnees
  */
 @Entity
-@Table(name = "words")
+@Table(name = "word")
 @XmlRootElement
 public class Word implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
     @NotNull
     @Column(name = "id")
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 250)
-    @Column(name = "libelle")
-    private String libelle;
+    @Column(name = "message")
+    private String message;
     @Basic(optional = false)
-   // @NotNull
+    // @NotNull
     @Column(name = "version")
     @Temporal(TemporalType.TIMESTAMP)
     private Date version;
 
     public Word() {
     }
-    
+
     @PrePersist
-    public void checkVersionIfNotNull(){
-        if(this.version==null) {this.version = Calendar.getInstance().getTime();}
+    public void checkVersionIfNotNull() {
+        if (this.version == null) {
+            this.version = Calendar.getInstance().getTime();
+        }
+    }
+    
+    @Transient
+    @Resource(name = "mail/mercuryGmailSession")
+    private Session session;
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(WordBean.class);
+    /**
+     * Implementation de Listener pour l'envoi d'email apres  enregistrement de message reussi par le client.
+     * ### A noter que la solution (JMS) de message asynchrone avec Le Message Driven Bean peut etre utilise
+     * pour une meilleure separation (loosely coupling)
+     * 
+     */
+    @PostPersist // commented for development test
+    public void sendEmail() {
+        try {
+            // Create email and headers.  
+            Message msg = new MimeMessage(session);
+            msg.setSubject("Send Message from mercury with id :" + this.id);
+            msg.setRecipient(RecipientType.TO, new InternetAddress("papesdiop@gmail.com", "Pape"));
+            msg.setFrom(new InternetAddress("psdnoreply@gmail.com", "Mercury"));
+            // text body
+            msg.setText("The message labelled " + this.message + " is sent!!!");
+            // Send email.  
+            Transport.send(msg);
+        } catch (UnsupportedEncodingException ex) {
+            LOGGER.error("UnsupportedEncodingException in sending Email {}",ex.getMessage());
+        } catch (MessagingException ex) {
+            LOGGER.error("MessagingException in sending Email {}",ex.getMessage());
+        }
     }
 
     public Word(Integer id) {
@@ -64,7 +107,7 @@ public class Word implements Serializable {
 
     public Word(Integer id, String libelle, Date version) {
         this.id = id;
-        this.libelle = libelle;
+        this.message = libelle;
         this.version = version;
     }
 
@@ -76,12 +119,12 @@ public class Word implements Serializable {
         this.id = id;
     }
 
-    public String getLibelle() {
-        return libelle;
+    public String getMessage() {
+        return message;
     }
 
-    public void setLibelle(String libelle) {
-        this.libelle = libelle;
+    public void setMessage(String libelle) {
+        this.message = libelle;
     }
 
     public Date getVersion() {
@@ -116,5 +159,4 @@ public class Word implements Serializable {
     public String toString() {
         return "com.mercury.entity.Words[ id=" + id + " ]";
     }
-
 }
