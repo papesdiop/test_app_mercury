@@ -32,6 +32,7 @@ public class LogBean extends AbstractFacade<Log> {
 
     @Override
     //@Asynchronous
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void create(Log entity) {
         super.create(entity);
     }

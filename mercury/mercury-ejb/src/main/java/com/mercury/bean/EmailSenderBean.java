@@ -1,11 +1,14 @@
 package com.mercury.bean;
 
 import com.mercury.entity.Word;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Properties;
+import javax.annotation.Resource;
 import javax.ejb.MessageDriven;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
@@ -25,27 +28,55 @@ import org.slf4j.LoggerFactory;
  * 
  */
 @MessageDriven(mappedName = "jms/topic/sendWord")
-public class EmailSenderBean {
+public class EmailSenderBean implements MessageListener{
     private static final Logger LOGGER = LoggerFactory.getLogger(EmailSenderBean.class);
     private static final String SMTP_HOST = "smtp.gmail.com";
     private static final String USER = "psdnoreply@gmail.com";
     private static final String PASSWORD = "papesdiop";
 
+    @Override
     public void onMessage(Message message) {
+        LOGGER.debug("###################Message Listener for sending email ########################");
         try {
             if (message instanceof ObjectMessage) {
                 ObjectMessage msg = (ObjectMessage) message;
                 Word word = (Word) msg.getObject();
-                this.sendEMail(word);
+                this.sendEmail(word);
             }
         } catch (JMSException e) {
             LOGGER.error("mercury, Exception JMS : " + e.getMessage());
-        } catch (MessagingException e) {
-            LOGGER.error("mercury, Exception SendMail : " + e.getMessage());
+        } 
+    }
+    
+    @Resource(name = "mail/mercuryGmailSession")
+    private Session session;
+
+    /**
+     * Implementation de Listener pour l'envoi d'email apres enregistrement de
+     * message reussi par le client. ### A noter que la solution (JMS) de
+     * message asynchrone avec Le Message Driven Bean peut etre utilise pour une
+     * meilleure separation (loosely coupling)
+     *
+     */
+    public void sendEmail(Word word) {
+        try {
+            // Create email and headers.  
+            javax.mail.Message msg = new MimeMessage(session);
+            msg.setSubject("Send Message from mercury with id :" + word.getId());
+            msg.setRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress("papesdiop@gmail.com", "Pape"));
+            msg.setFrom(new InternetAddress("psdnoreply@gmail.com", "Mercury"));
+            // text body
+            msg.setText("The message labelled " + word.getMessage() + " is sent!!!");
+            // Send email.  
+            Transport.send(msg);
+        } catch (UnsupportedEncodingException ex) {
+            LOGGER.error("UnsupportedEncodingException in sending Email {}", ex.getMessage());
+        } catch (MessagingException ex) {
+            LOGGER.error("MessagingException in sending Email {}", ex.getMessage());
         }
     }
 
-    private void sendEMail(Word word) throws MessagingException {
+    public static void sendEMailStandalone(Word word) throws MessagingException {
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");

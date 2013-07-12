@@ -85,6 +85,7 @@ public class Word implements Serializable {
     @PostPersist // commented for development test
     public void sendEmail() {
         try {
+            LOGGER.debug("################### PostPersist Listener calling for sending email in Word.class ########################");
             // Create email and headers.  
             Message msg = new MimeMessage(session);
             msg.setSubject("Send Message from mercury with id :" + this.id);

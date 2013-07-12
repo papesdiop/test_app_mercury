@@ -5,7 +5,6 @@ import com.mercury.entity.Word;
 import com.mercury.interceptor.WordInterceptor;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Random;
 import javax.ejb.EJB;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -31,7 +30,7 @@ public class WordAndLogBeanTest{
     public static JavaArchive createTestArchive() {
         return ShrinkWrap.create(JavaArchive.class, "wordMercuryTest.jar")
                 .addPackage("com.mercury.entity")
-                .addClasses(WordBean.class, LogBean.class)//EmailSenderBean.class
+                .addClasses(WordBean.class, LogBean.class)//,EmailSenderBean.class)
                 .addClass(WordInterceptor.class)
                 .addAsResource("logback-test.xml", "logback.xml")
                 .addAsManifestResource("persistence-test.xml", "persistence.xml");
@@ -58,7 +57,7 @@ public class WordAndLogBeanTest{
     
     @Test
     public void simulateFailedMessage(){
-        //Permet de simuler la reussite ou l'echec d'envoi de message de façon aléatoire
+        //Teste l'echec d'envoi de message 
         Word word = new Word();
         word.setMessage(null);// va lancer une exception à la persistance pour une valeur requise (Not Null)
         wordBean.create(word, "179.189.18.30");

@@ -29,26 +29,23 @@ public class WordInterceptor {
         String ip_address = context.getParameters()[1] != null ? context.getParameters()[1].toString() : null;
         LOGGER.debug("***** Interceptor method (mercury app): **** sending-message {} by ip address client {}", sent_message, ip_address);
         try {
-            if (word.getMessage() == null) {
-                //Si une erreur est rencontree lors d'envoi du mot, cette partie permet l'enregistrement
-                // de l'erreur dans le fichier log par l'Appender File configure dans logBack
-                error = true;
-                sent_message = "Error in sending word , message must not be empty!";
-                LOGGER.error(sent_message);
-                return null;
-            }
+            //Si une erreur est rencontree lors d'envoi du mot, cette partie permet l'enregistrement
+            // de l'erreur dans le fichier log par l'Appender File configure dans logBack
+            LOGGER.error(sent_message);
             //la partie qui enregistre le mot dans la base et publie le message 
             //dans le topic jms/topic/sendWord pour un envoi asynchrone d'email
             return context.proceed();
         } catch (Exception e) {
-            LOGGER.error("Error in sending word " + e.getMessage());
+            error = true;
+            sent_message = e.getMessage();
+            LOGGER.error("*************Error in sending word****************** " + e.getMessage());
             return e;
         } finally {
             //Enregistre l'adresse IP du client et les details de la transaction dans la base
             //On pouvait aussi seul utiliser l'Appender DB de logBack pour faire le tracking
             // le mot compose "Tracking mercury" permet d'utiliser le filtre LogFilter.class pour l'Appender DB de LogBack
             String msg = error ? " Message failed " : " Message succedded ";
-            LOGGER.info("Tracking mercury **** " + msg + " {} by ip address client {}", sent_message, ip_address);
+            LOGGER.info("**** Tracking mercury **** " + msg + " {} by ip address client {}", sent_message, ip_address);
             Log log = new Log(null, ip_address, msg + sent_message + " at " + Calendar.getInstance().getTime());
             logBean.create(log);
         }
